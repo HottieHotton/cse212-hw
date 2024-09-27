@@ -11,27 +11,39 @@ public class CustomerService {
         // Test Cases
 
         // Test 1
-        // Scenario: 
-        // Expected Result: 
+        // * Scenario: Ensure maxSize equals 10 on start, add a customer and serve them
+        // ? Expected Result: See the customer get returned from the queue
         Console.WriteLine("Test 1");
+        var cs = new CustomerService(0);
+        Console.WriteLine(cs); // ! Output should be 10
+        cs.AddNewCustomer();
+        Console.WriteLine(cs);
+        cs.ServeCustomer();
+        cs.ServeCustomer();
 
-        // Defect(s) Found: 
+        // * Defect(s) Found: Customer was being removed from List before even becoming a variable. Changed the List to a Queue to fix the issue
 
         Console.WriteLine("=================");
 
         // Test 2
-        // Scenario: 
-        // Expected Result: 
+        // * Scenario: Hit max length of customer service queue
+        // ? Expected Result: See error when we try to add 2 customers on a length of 1
         Console.WriteLine("Test 2");
+        cs = new CustomerService(1);
+        Console.WriteLine(cs); // ! Output should be 1
+        cs.AddNewCustomer();
+        Console.WriteLine("");
+        cs.AddNewCustomer(); // ! Should throw error
 
-        // Defect(s) Found: 
+        // * Defect(s) Found: The code was checking the length of the queue before even adding a new customer, which would not work until going over the limit by 1.
+        // * Moved the if statement below the enqueue call and checked, if error was thrown then we would dequeue that customer.
 
         Console.WriteLine("=================");
 
         // Add more Test Cases As Needed Below
     }
 
-    private readonly List<Customer> _queue = new();
+    private readonly Queue<Customer> _queue = new Queue<Customer>();
     private readonly int _maxSize;
 
     public CustomerService(int maxSize) {
@@ -66,12 +78,6 @@ public class CustomerService {
     /// new record into the queue.
     /// </summary>
     private void AddNewCustomer() {
-        // Verify there is room in the service queue
-        if (_queue.Count > _maxSize) {
-            Console.WriteLine("Maximum Number of Customers in Queue.");
-            return;
-        }
-
         Console.Write("Customer Name: ");
         var name = Console.ReadLine()!.Trim();
         Console.Write("Account Id: ");
@@ -81,15 +87,20 @@ public class CustomerService {
 
         // Create the customer object and add it to the queue
         var customer = new Customer(name, accountId, problem);
-        _queue.Add(customer);
+        _queue.Enqueue(customer);
+        // Verify there is room in the service queue
+        if (_queue.Count > _maxSize) {
+            Console.WriteLine("Maximum Number of Customers in Queue.");
+            _queue.Dequeue();
+            return;
+        }
     }
 
     /// <summary>
     /// Dequeue the next customer and display the information.
     /// </summary>
     private void ServeCustomer() {
-        _queue.RemoveAt(0);
-        var customer = _queue[0];
+        var customer = _queue.Dequeue();
         Console.WriteLine(customer);
     }
 
