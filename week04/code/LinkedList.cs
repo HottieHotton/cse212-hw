@@ -33,6 +33,21 @@ public class LinkedList : IEnumerable<int>
     public void InsertTail(int value)
     {
         // TODO Problem 1
+        // Create new node
+        Node newNode = new(value);
+        // If the list is empty, then point both head and tail to the new node.
+        if (_tail is null)
+        {
+            _head = newNode;
+            _tail = newNode;
+        }
+        // If the list is not empty, then only tail will be affected.
+        else
+        {
+            _tail.Next = newNode;
+            newNode.Prev = _tail;
+            _tail = newNode;
+        }
     }
 
 
@@ -65,6 +80,18 @@ public class LinkedList : IEnumerable<int>
     public void RemoveTail()
     {
         // TODO Problem 2
+        if (_head == _tail)
+        {
+            _head = null;
+            _tail = null;
+        }
+        // If the list has more than one item in it, then only the tail
+        // will be affected.
+        else if (_tail is not null)
+        {
+            _tail = _tail.Prev;
+            _tail.Next = null;
+        }
     }
 
     /// <summary>
@@ -109,6 +136,44 @@ public class LinkedList : IEnumerable<int>
     public void Remove(int value)
     {
         // TODO Problem 3
+        var current = _head;  // Start from the head
+
+        while (current is not null)
+        {
+            if (current.Data == value)
+            {
+                // Case 1: Node is the head
+                if (current == _head)
+                {
+                    _head = _head.Next;
+                    if (_head is not null)
+                    {
+                        _head.Prev = null;
+                    }
+                    else
+                    {
+                        _tail = null;
+                    }
+                }
+                // Case 2: Node is the tail
+                else if (current == _tail)
+                {
+                    _tail = _tail.Prev;
+                    if (_tail is not null)
+                    {
+                        _tail.Next = null;
+                    }
+                }
+                // Case 3: Node is in the middle
+                else
+                {
+                    current.Prev!.Next = current.Next;
+                    current.Next!.Prev = current.Prev;
+                }
+                break; // Exit loop after finding and removing the node
+            }
+            current = current.Next;
+        }
     }
 
     /// <summary>
@@ -117,6 +182,15 @@ public class LinkedList : IEnumerable<int>
     public void Replace(int oldValue, int newValue)
     {
         // TODO Problem 4
+        var current = _head;
+        while (current is not null)
+        {
+            if (current.Data == oldValue)
+            {
+                current.Data = newValue;
+            }
+            current = current.Next;
+        }
     }
 
     /// <summary>
@@ -147,7 +221,35 @@ public class LinkedList : IEnumerable<int>
     public IEnumerable Reverse()
     {
         // TODO Problem 5
-        yield return 0; // replace this line with the correct yield return statement(s)
+        if (_head is null) // Check if the list is empty
+        {
+            yield break;
+        }
+
+        var current = _head;
+        Node temp = null;
+        while (current is not null)
+        {
+            // Swap the Next and Prev pointers
+            temp = current.Prev;
+            current.Prev = current.Next;
+            current.Next = temp;
+            current = current.Prev;
+        }
+
+        // Swap the head and tail pointers
+        if (temp is not null)
+        {
+            _tail = _head;
+            _head = temp.Prev;
+        }
+
+        current = _head; // Start from the new head
+        while (current is not null)
+        {
+            yield return current.Data;
+            current = current.Next;
+        }
     }
 
     public override string ToString()
@@ -168,8 +270,10 @@ public class LinkedList : IEnumerable<int>
     }
 }
 
-public static class IntArrayExtensionMethods {
-    public static string AsString(this IEnumerable array) {
+public static class IntArrayExtensionMethods
+{
+    public static string AsString(this IEnumerable array)
+    {
         return "<IEnumerable>{" + string.Join(", ", array.Cast<int>()) + "}";
     }
 }
